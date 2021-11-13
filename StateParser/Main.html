@@ -1,0 +1,68 @@
+<script src="data.js"></script>
+<script src="svgHelper.js"></script>
+<link rel="stylesheet" href="main.css">
+hello
+<div class="wrapper">
+	<div class="svg-container" id="svg-container">
+		<svg id="svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400">
+			<defs>
+				<marker id="arrowhead" markerWidth="4" markerHeight="3" refX="0" refY="1.5" orient="auto">
+					<polygon points="0 0, 4 1.5, 0 3" />
+				</marker>
+				<polygon points="0,-60 10,-50 0,-55 -10,-50" class="box" id="box" />
+			</defs>
+		</svg>
+	</div>
+</div>
+<script>
+let svgHelper = new SVGHelper(document.getElementById("svg"));
+let linkedStates = new LinkedStates();
+
+/*
+svgHelper.addState('test0', 'test0', 0, 0)
+svgHelper.addState('test1', 'test1', 0, 1)
+svgHelper.addState('test2', 'test2', 1, 0)
+svgHelper.addState('test3', 'test3', 1, 1)
+
+svgHelper.addConection("test0", "test2")
+svgHelper.addConection("test0", "test3")
+*/
+
+let displayMatrix = [[linkedStates.entryPoint]];
+let connectionsToRender = []
+let alreadyRendered = []
+let currentRow = 0;
+while(currentRow < 20) {
+	if(displayMatrix[currentRow].length > 0) {
+		console.log(currentRow)
+		let currentColumn = 0;
+		let nextConnectionsToRender = []
+		displayMatrix.push(new Set())
+		for (currentColumn in displayMatrix[currentRow]) {
+			if(!alreadyRendered.includes(displayMatrix[currentRow][currentColumn])) {
+				let name = displayMatrix[currentRow][currentColumn].class
+				svgHelper.addState(name, name, currentRow, currentColumn);
+				alreadyRendered.push( displayMatrix[currentRow][currentColumn])
+				console.log(displayMatrix)
+				for(conditionIndex in displayMatrix[currentRow][currentColumn].conditionalFlow) {
+					if( displayMatrix[currentRow][currentColumn] !== displayMatrix[currentRow][currentColumn].conditionalFlow[conditionIndex].nextStateLink) {
+						nextConnectionsToRender.push({'from': name, 'to': displayMatrix[currentRow][currentColumn].conditionalFlow[conditionIndex].nextStateLink.class})
+						displayMatrix[currentRow+1].add(displayMatrix[currentRow][currentColumn].conditionalFlow[conditionIndex].nextStateLink)
+					}
+				}
+			}
+		}
+		for(index in connectionsToRender) {
+			svgHelper.addConection(connectionsToRender[index].from, connectionsToRender[index].to)
+		}
+		connectionsToRender = nextConnectionsToRender;
+		displayMatrix[currentRow+1] = [...displayMatrix[currentRow+1]]
+		currentRow ++;
+		
+	} else {
+		break;
+	}
+}
+
+
+</script>
